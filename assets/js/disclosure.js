@@ -1,14 +1,24 @@
 function initDisclosure() {
-    document.querySelectorAll('.disclosure-button').forEach((element) => {
-        const target = document.getElementById(element.getAttribute('aria-controls'));
-        element.addEventListener('click', (event) => {
-            const isExpanded = event.target.classList.contains('expanded');
-            event.target.classList.toggle('expanded');
-            target.classList.toggle('expanded');
-        })
-    })
+  document.querySelectorAll(".disclosure-button").forEach((element) => {
+    const target = document.getElementById(
+      element.getAttribute("aria-controls")
+    );
+
+    const isExpanded = element.classList.contains("expanded");
+    element.setAttribute("aria-expanded", String(isExpanded));
+
+    element.addEventListener("click", () => {
+      const nowExpanded = element.getAttribute("aria-expanded") === "true";
+      const newState = !nowExpanded;
+
+      element.setAttribute("aria-expanded", String(newState));
+
+      element.classList.toggle("expanded");
+      target.classList.toggle("expanded");
+    });
+  });
 }
 
-window.addEventListener('DOMContentLoaded', (event) => {
-    initDisclosure();
+window.addEventListener("DOMContentLoaded", (event) => {
+  initDisclosure();
 });

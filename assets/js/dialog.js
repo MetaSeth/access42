@@ -1,56 +1,63 @@
-// Ouvrir la fenêtre de dialogue
+const triggerButton = document.getElementById("menu_button");
+const closeButton = document.getElementById("close_menu_button");
+const dialog = document.getElementById("menu");
+const mainContent = document.getElementById("wrapper");
 
+const focusableSelectors =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function openDialog() {
-
-  // Rendre la fenêtre de dialogue visible et ajouter les attributs ARIA
-  const dialog = document.getElementById("menu");
-  dialog.style.display = "block";
-  dialog.setAttribute("aria-hidden", "true");
-  dialog.classList.remove('hidden');
-
-
-  // Désactiver la navigation au clavier en dehors de la fenêtre de dialogue
-  const mainContent = document.getElementById("wrapper");
-  mainContent.setAttribute("aria-hidden", "true");
-  mainContent.setAttribute("inert", "true");
-
-  // Définir le titre focus initial sur la fenêtre de dialogue
-  setTimeout(function() {
-    dialog.focus();
-  }, 100);
-
+function getFocusableElements() {
+  return Array.from(dialog.querySelectorAll(focusableSelectors));
 }
 
-// Fermer la fenêtre de dialogue
-function closeDialog() {
-  // Rendre la fenêtre de dialogue invisible et supprimer les attributs ARIA
-  const dialog = document.getElementById("menu");
-  dialog.style.display = "none";
-  dialog.className = 'hidden';
+function openDialog() {
+  dialog.classList.remove("hidden");
 
-  // Réactiver la navigation au clavier en dehors de la fenêtre de dialogue
-  const mainContent = document.getElementById("wrapper");
+  triggerButton.setAttribute("aria-expanded", "true");
+  mainContent.setAttribute("aria-hidden", "true");
+  mainContent.setAttribute("inert", "");
+
+  closeButton.focus();
+
+  dialog.addEventListener("keydown", handleFocusTrap);
+}
+
+function closeDialog() {
+  dialog.classList.add("hidden");
+
+  triggerButton.setAttribute("aria-expanded", "false");
   mainContent.removeAttribute("aria-hidden");
   mainContent.removeAttribute("inert");
 
+  dialog.removeEventListener("keydown", handleFocusTrap);
+
+  triggerButton.focus();
 }
 
-// Gérer les interactions clavier pour la fenêtre de dialogue
-function handleKeyPress(event) {
-  // Si la touche "Escape" est enfoncée, fermer la fenêtre de dialogue
+function handleFocusTrap(event) {
+  const focusable = getFocusableElements();
+  const firstFocusable = focusable[0];
+  const lastFocusable = focusable[focusable.length - 1];
+
   if (event.key === "Escape") {
     closeDialog();
+    return;
+  }
+
+  if (event.key === "Tab") {
+    if (event.shiftKey) {
+      if (document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable.focus();
+      }
+    } else {
+      if (document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus();
+      }
+    }
   }
 }
 
-// Ajouter les événements aux éléments appropriés
-const triggerButton = document.getElementById("menu_button");
 triggerButton.addEventListener("click", openDialog);
-
-const closeButton = document.getElementById("close_menu_button");
 closeButton.addEventListener("click", closeDialog);
-
-const dialog = document.getElementById("menu");
-dialog.addEventListener("keydown", handleKeyPress);
-
